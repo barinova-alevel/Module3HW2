@@ -10,6 +10,7 @@ namespace PhoneBook_generic.Collections.Abstractions
     public interface IPhoneBook<T> where T : IContact
     {
         public void Add(T contact);
+        public void Sort();
 
         public IReadOnlyCollection<T> this[string key] { get; }
     }

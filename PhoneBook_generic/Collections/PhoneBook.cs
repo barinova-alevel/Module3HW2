@@ -2,11 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using PhoneBook_generic.Models.Abstractions;
+using System.Linq;
 
 namespace PhoneBook_generic.Collections
 {
@@ -15,8 +13,9 @@ namespace PhoneBook_generic.Collections
         private IDictionary<CultureInfo, ICollection<T>> _culturedCollections;
         private IDictionary<CharType, ICollection<T>> _specialCollections;
         private ICultureResolver _cultureResolver;
+        private readonly IComparer<T> _comparer;
 
-        public PhoneBook()
+        public PhoneBook(IComparer<T> comparer)
         {
             _cultureResolver = new CultureResolver();
             _culturedCollections = new Dictionary<CultureInfo, ICollection<T>>();
@@ -25,6 +24,7 @@ namespace PhoneBook_generic.Collections
             _specialCollections = new Dictionary<CharType, ICollection<T>>();
             _specialCollections.Add(CharType.Number, new List<T>());
             _specialCollections.Add(CharType.Special, new List<T>());
+            _comparer = comparer;
         }
 
         public void Add(T contact)
@@ -54,6 +54,23 @@ namespace PhoneBook_generic.Collections
                 }
             }
             return _culturedCollections[cultureInfo];
+        }
+
+        public void Sort() 
+        {
+            Sort<CultureInfo>(_culturedCollections);
+            Sort<CharType>(_specialCollections);
+        }
+            
+
+        public void Sort<TKey>(IDictionary<TKey, ICollection<T>> dictionary)
+        {
+            foreach (var pair in dictionary)
+            {
+                var arr = pair.Value.ToArray();
+                Array.Sort(arr, _comparer);
+                dictionary[pair.Key] = arr;
+            }
         }
 
         public IReadOnlyCollection<T> this[string key]
